@@ -4,11 +4,14 @@ package config
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/creachadair/ffs/blob"
 	"github.com/creachadair/jrpc2"
@@ -35,6 +38,26 @@ func (c *Config) OpenStore(_ context.Context) (blob.Store, error) {
 	}
 	ch := channel.Line(conn, conn)
 	return rpcstore.NewClient(jrpc2.NewClient(ch, nil), nil), nil
+}
+
+// ParseKey parses the string encoding of a key.  By default, s must be hex
+// encoded. If s begins with "@", it is taken literally. If s begins with "+"
+// it is taken as base64.
+func (c *Config) ParseKey(s string) (string, error) {
+	if strings.HasPrefix(s, "@") {
+		return s[1:], nil
+	} else if strings.HasPrefix(s, "+") {
+		key, err := base64.StdEncoding.DecodeString(s[1:])
+		if err != nil {
+			return "", fmt.Errorf("invalid key %q: %w", s, err)
+		}
+		return string(key), nil
+	}
+	key, err := hex.DecodeString(s)
+	if err != nil {
+		return "", fmt.Errorf("invalid key %q: %w", s, err)
+	}
+	return string(key), nil
 }
 
 // Load reads and parses the contents of a config file from path.  If the
