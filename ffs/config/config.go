@@ -43,7 +43,7 @@ func (c *Config) OpenStore(_ context.Context) (blob.Store, error) {
 // ParseKey parses the string encoding of a key.  By default, s must be hex
 // encoded. If s begins with "@", it is taken literally. If s begins with "+"
 // it is taken as base64.
-func (c *Config) ParseKey(s string) (string, error) {
+func ParseKey(s string) (string, error) {
 	if strings.HasPrefix(s, "@") {
 		return s[1:], nil
 	} else if strings.HasPrefix(s, "+") {
