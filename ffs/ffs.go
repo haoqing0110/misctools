@@ -27,12 +27,16 @@ var (
 			if storeAddr != "" {
 				cfg.StoreAddress = storeAddr
 			}
+			expandString(&cfg.StoreAddress)
+			env.Config = cfg
 			return nil
 		},
 
 		Commands: nil,
 	}
 )
+
+func expandString(s *string) { *s = os.ExpandEnv(*s) }
 
 func init() {
 	if cf, ok := os.LookupEnv("FFS_CONFIG"); ok && cf != "" {
