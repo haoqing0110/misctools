@@ -91,12 +91,22 @@ func valueSize(v reflect.Value, seen map[uintptr]bool) uintptr {
 				}
 			case reflect.Slice:
 				base += valueSize(f, seen)
+			default:
+				base += valueSize(f, seen)
+				//fmt.Printf("Struct Uncatched %s \n", kind)
 			}
 		}
 
 	case reflect.String:
 		return base + uintptr(v.Len())
 
+	case reflect.Interface:
+		base += v.Type().Size() + valueSize(reflect.ValueOf(v), make(map[uintptr]bool))
+
+	default:
+		fmt.Printf("Uncatched %s \n", v.Kind())
+
 	}
+
 	return base
 }
